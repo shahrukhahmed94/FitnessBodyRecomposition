@@ -6,6 +6,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -60,6 +62,68 @@ fun AddMealScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            val uiState by viewModel.uiState.collectAsState()
+            val recentMeals = uiState.allMeals.distinctBy { it.name.lowercase() }.takeLast(5)
+            
+            Text("Quick Estimates", color = TextWhite, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        mealName = "Light Snack"
+                        calories = "200"; protein = "15"; carbs = "25"; fat = "5"
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceColor),
+                    contentPadding = PaddingValues(0.dp)
+                ) { Text("Light", color = NeonGreen) }
+                
+                Button(
+                    onClick = {
+                        mealName = "Medium Meal"
+                        calories = "600"; protein = "40"; carbs = "65"; fat = "20"
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceColor),
+                    contentPadding = PaddingValues(0.dp)
+                ) { Text("Medium", color = NeonGreen) }
+                
+                Button(
+                    onClick = {
+                        mealName = "Heavy Meal"
+                        calories = "1200"; protein = "60"; carbs = "120"; fat = "50"
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceColor),
+                    contentPadding = PaddingValues(0.dp)
+                ) { Text("Heavy", color = NeonGreen) }
+            }
+            
+            if (recentMeals.isNotEmpty()) {
+                Text("Recent Meals", color = TextWhite, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(recentMeals) { meal ->
+                        FilterChip(
+                            selected = false,
+                            onClick = {
+                                mealName = meal.name
+                                selectedMealType = meal.mealType
+                                calories = meal.calories.toString()
+                                protein = meal.protein.toString()
+                                carbs = meal.carbs.toString()
+                                fat = meal.fat.toString()
+                            },
+                            label = { Text(meal.name) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = SurfaceColor, 
+                                labelColor = TextWhite
+                            )
+                        )
+                    }
+                }
+            }
+            
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = Color.DarkGray.copy(alpha = 0.5f))
+            
             // Meal Name
             OutlinedTextField(
                 value = mealName,

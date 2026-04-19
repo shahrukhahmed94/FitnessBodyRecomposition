@@ -10,8 +10,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +41,19 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refresh()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -137,11 +154,11 @@ fun DashboardScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            MacroCard(title = "Carbs", value = "${uiState.carbs}g", modifier = Modifier.weight(1f))
+            MacroCard(title = "Carbs Left", value = "${uiState.carbs}g", modifier = Modifier.weight(1f))
             Spacer(modifier = Modifier.width(8.dp))
-            MacroCard(title = "Protein", value = "${uiState.protein}g", modifier = Modifier.weight(1f))
+            MacroCard(title = "Protein Left", value = "${uiState.protein}g", modifier = Modifier.weight(1f))
             Spacer(modifier = Modifier.width(8.dp))
-            MacroCard(title = "Fat", value = "${uiState.fat}g", modifier = Modifier.weight(1f))
+            MacroCard(title = "Fat Left", value = "${uiState.fat}g", modifier = Modifier.weight(1f))
         }
 
         // Body Weight Trend (Placeholder for Graph)

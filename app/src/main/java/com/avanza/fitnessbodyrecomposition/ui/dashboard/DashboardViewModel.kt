@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.avanza.fitnessbodyrecomposition.data.model.WeightLog
 
 class DashboardViewModel(private val context: Context) : ViewModel() {
@@ -16,6 +19,10 @@ class DashboardViewModel(private val context: Context) : ViewModel() {
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
     init {
+        refresh()
+    }
+
+    fun refresh() {
         loadUserData()
         updateGreeting()
     }
@@ -156,6 +163,34 @@ class DashboardViewModel(private val context: Context) : ViewModel() {
             val protein = (targetCalories * 0.3 / 4).toInt()
             val fat = (targetCalories * 0.3 / 9).toInt()
 
+            // Calculate Eaten Macros for Today
+            var eatenCalories = 0
+            var eatenCarbs = 0
+            var eatenProtein = 0
+            var eatenFat = 0
+            
+            val sharedPref = context.getSharedPreferences("fitness_prefs", Context.MODE_PRIVATE)
+            val mealsJson = sharedPref.getString("meals", "[]") ?: "[]"
+            val jsonArray = JSONArray(mealsJson)
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val todayStr = sdf.format(Date())
+            
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+                val ts = obj.getLong("timestamp")
+                if (sdf.format(Date(ts)) == todayStr) {
+                    eatenCalories += obj.getInt("calories")
+                    eatenCarbs += obj.getInt("carbs")
+                    eatenProtein += obj.getInt("protein")
+                    eatenFat += obj.getInt("fat")
+                }
+            }
+
+            val remainingCalories = targetCalories.toInt() - eatenCalories
+            val remainingCarbs = carbs - eatenCarbs
+            val remainingProtein = protein - eatenProtein
+            val remainingFat = fat - eatenFat
+
             val status = when {
                 bmi < 18.5 -> "Underweight - Focus on Surplus"
                 bmi < 24.9 -> "Healthy - Focus on Recomp"
@@ -167,10 +202,10 @@ class DashboardViewModel(private val context: Context) : ViewModel() {
                 it.copy(
                     bmi = bmi, 
                     status = status,
-                    caloriesLeft = targetCalories.toInt(),
-                    carbs = carbs,
-                    protein = protein,
-                    fat = fat,
+                    caloriesLeft = remainingCalories.coerceAtLeast(0),
+                    carbs = remainingCarbs.coerceAtLeast(0),
+                    protein = remainingProtein.coerceAtLeast(0),
+                    fat = remainingFat.coerceAtLeast(0),
                     currentWeight = weight
                 ) 
             }
