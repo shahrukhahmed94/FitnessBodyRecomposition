@@ -1,10 +1,14 @@
 package com.avanza.fitnessbodyrecomposition.data.model
 
+data class LoggedSet(
+    val setIndex: Int,
+    val reps: Int
+)
+
 data class CompletedExercise(
     val name: String,
-    val setsCompleted: Int,
     val targetSets: Int,
-    val reps: String
+    val loggedSets: List<LoggedSet>
 )
 
 data class WorkoutLog(

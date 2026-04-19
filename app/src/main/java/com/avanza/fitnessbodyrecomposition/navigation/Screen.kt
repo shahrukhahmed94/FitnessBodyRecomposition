@@ -12,4 +12,5 @@ sealed class Screen(val route: String) {
     object Progress : Screen("progress")
     object Nutrition : Screen("nutrition")
     object AddMeal : Screen("add_meal")
+    object Steps : Screen("steps")
 }

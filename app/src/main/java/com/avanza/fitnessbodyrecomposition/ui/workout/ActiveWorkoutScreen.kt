@@ -25,6 +25,10 @@ import com.avanza.fitnessbodyrecomposition.ui.theme.TextGrey
 import com.avanza.fitnessbodyrecomposition.ui.theme.TextWhite
 import org.koin.androidx.compose.koinViewModel
 import com.avanza.fitnessbodyrecomposition.data.model.CompletedExercise
+import com.avanza.fitnessbodyrecomposition.data.model.LoggedSet
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 
 data class Exercise(val name: String, val sets: Int, val reps: String)
 
@@ -70,6 +74,7 @@ fun ActiveWorkoutScreen(
 
     // State map to track checkbox toggles: Key is "ExerciseName_SetNumber"
     val completedSets = remember { mutableStateMapOf<String, Boolean>() }
+    val enteredReps = remember { mutableStateMapOf<String, String>() }
     
     Scaffold(
         topBar = {
@@ -94,17 +99,18 @@ fun ActiveWorkoutScreen(
                     onClick = { 
                         // Map checked state down to CompletedExercise objects
                         val completedList = exercises.map { ex ->
-                            var setsDone = 0
+                            val loggedDetails = mutableListOf<LoggedSet>()
                             for (i in 0 until ex.sets) {
                                 if (completedSets["${ex.name}_${i}"] == true) {
-                                    setsDone++
+                                    val repsInput = enteredReps["${ex.name}_${i}"]
+                                    val repsInt = repsInput?.toIntOrNull() ?: 0
+                                    loggedDetails.add(LoggedSet(setIndex = i, reps = repsInt))
                                 }
                             }
                             CompletedExercise(
                                 name = ex.name,
-                                setsCompleted = setsDone,
                                 targetSets = ex.sets,
-                                reps = ex.reps
+                                loggedSets = loggedDetails
                             )
                         }
                     
@@ -143,8 +149,12 @@ fun ActiveWorkoutScreen(
                 ExerciseCard(
                     exercise = exercise,
                     completedSets = completedSets,
+                    enteredReps = enteredReps,
                     onSetToggled = { setIndex, isChecked ->
                         completedSets["${exercise.name}_$setIndex"] = isChecked
+                    },
+                    onRepsChanged = { setIndex, repsVal ->
+                        enteredReps["${exercise.name}_$setIndex"] = repsVal
                     }
                 )
             }
@@ -156,7 +166,9 @@ fun ActiveWorkoutScreen(
 fun ExerciseCard(
     exercise: Exercise,
     completedSets: Map<String, Boolean>,
-    onSetToggled: (Int, Boolean) -> Unit
+    enteredReps: Map<String, String>,
+    onSetToggled: (Int, Boolean) -> Unit,
+    onRepsChanged: (Int, String) -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
@@ -173,6 +185,7 @@ fun ExerciseCard(
              // Render sets rows
              repeat(exercise.sets) { setNum ->
                  val isChecked = completedSets["${exercise.name}_$setNum"] == true
+                 val repsVal = enteredReps["${exercise.name}_$setNum"] ?: ""
                  
                  Row(
                      modifier = Modifier
@@ -181,13 +194,29 @@ fun ExerciseCard(
                      verticalAlignment = Alignment.CenterVertically
                  ) {
                      Text(text = "${setNum + 1}", color = TextGrey, modifier = Modifier.width(30.dp))
-                     Text(text = "${exercise.reps} reps", color = TextWhite, modifier = Modifier.weight(1f))
+                     Text(text = "Target: ${exercise.reps}", color = TextGrey, modifier = Modifier.weight(1f))
+                     
+                     OutlinedTextField(
+                         value = repsVal,
+                         onValueChange = { onRepsChanged(setNum, it) },
+                         modifier = Modifier.width(80.dp).padding(end = 16.dp),
+                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                         colors = OutlinedTextFieldDefaults.colors(
+                             focusedBorderColor = NeonGreen,
+                             unfocusedBorderColor = TextGrey,
+                             focusedTextColor = TextWhite,
+                             unfocusedTextColor = TextWhite
+                         ),
+                         singleLine = true,
+                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                         placeholder = { Text("0", color = TextGrey, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
+                     )
                      
                      Icon(
                          imageVector = if (isChecked) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
                          contentDescription = "Complete",
                          tint = if (isChecked) NeonGreen else TextGrey,
-                         modifier = Modifier.clickable { onSetToggled(setNum, !isChecked) }
+                         modifier = Modifier.clickable { onSetToggled(setNum, !isChecked) }.size(32.dp)
                      )
                  }
                  HorizontalDivider(color = Color.DarkGray.copy(alpha = 0.5f))

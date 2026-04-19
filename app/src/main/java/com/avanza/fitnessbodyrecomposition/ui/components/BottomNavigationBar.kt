@@ -2,6 +2,7 @@ package com.avanza.fitnessbodyrecomposition.ui.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Restaurant
@@ -24,7 +25,8 @@ fun BottomNavigationBar(navController: NavController) {
         BottomNavItem.Home,
         BottomNavItem.Workout,
         BottomNavItem.Nutrition,
-        BottomNavItem.Progress
+        BottomNavItem.Progress,
+        BottomNavItem.Steps
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -64,4 +66,5 @@ sealed class BottomNavItem(var title: String, var icon: ImageVector, var route: 
     object Workout : BottomNavItem("Workout", Icons.Default.FitnessCenter, "workout")
     object Nutrition : BottomNavItem("Nutrition", Icons.Default.Restaurant, Screen.Nutrition.route)
     object Progress : BottomNavItem("Progress", Icons.Default.Analytics, Screen.Progress.route)
+    object Steps : BottomNavItem("Steps", Icons.Default.DirectionsWalk, Screen.Steps.route)
 }

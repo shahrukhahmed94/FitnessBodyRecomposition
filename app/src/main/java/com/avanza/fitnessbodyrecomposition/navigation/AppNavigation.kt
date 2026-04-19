@@ -92,6 +92,10 @@ fun AppNavigation() {
             composable(Screen.AddMeal.route) {
                 AddMealScreen(navController)
             }
+            
+            composable(Screen.Steps.route) {
+                com.avanza.fitnessbodyrecomposition.ui.steps.StepsScreen(navController)
+            }
         }
     }
 }

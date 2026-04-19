@@ -193,10 +193,19 @@ fun WorkoutScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "${ex.setsCompleted} / ${ex.targetSets} sets (${ex.reps} reps)",
+                                    text = "${ex.loggedSets.size} / ${ex.targetSets} sets completed",
                                     color = TextGrey,
                                     style = MaterialTheme.typography.bodySmall
                                 )
+                                if (ex.loggedSets.isNotEmpty()) {
+                                    val repsDetails = ex.loggedSets.joinToString(", ") { "Set ${it.setIndex + 1}: ${it.reps} reps" }
+                                    Text(
+                                        text = repsDetails,
+                                        color = TextGrey.copy(alpha = 0.8f),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        modifier = Modifier.padding(top = 2.dp)
+                                    )
+                                }
                                 HorizontalDivider(modifier = Modifier.padding(top = 4.dp), color = Color.DarkGray.copy(alpha = 0.5f))
                             }
                         }

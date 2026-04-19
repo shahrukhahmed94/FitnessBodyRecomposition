@@ -3,6 +3,7 @@ package com.avanza.fitnessbodyrecomposition.ui.workout
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.avanza.fitnessbodyrecomposition.data.model.CompletedExercise
+import com.avanza.fitnessbodyrecomposition.data.model.LoggedSet
 import com.avanza.fitnessbodyrecomposition.data.model.WorkoutLog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,12 +39,36 @@ class WorkoutViewModel(private val context: Context) : ViewModel() {
                 val exercisesArray = item.getJSONArray("completedExercises")
                 for (j in 0 until exercisesArray.length()) {
                     val exItem = exercisesArray.getJSONObject(j)
+                    val name = exItem.getString("name")
+                    val targetSets = exItem.getInt("targetSets")
+                    val loggedSetsList = mutableListOf<LoggedSet>()
+
+                    if (exItem.has("loggedSets")) {
+                        val setsArray = exItem.getJSONArray("loggedSets")
+                        for (k in 0 until setsArray.length()) {
+                            val setObj = setsArray.getJSONObject(k)
+                            loggedSetsList.add(
+                                LoggedSet(
+                                    setIndex = setObj.getInt("setIndex"),
+                                    reps = setObj.getInt("reps")
+                                )
+                            )
+                        }
+                    } else {
+                        // Migration logic for old schema
+                        val setsCompleted = exItem.optInt("setsCompleted", 0)
+                        val repsString = exItem.optString("reps", "0").filter { it.isDigit() }
+                        val repsCount = if (repsString.isNotEmpty()) repsString.toInt() else 0
+                        for (k in 0 until setsCompleted) {
+                            loggedSetsList.add(LoggedSet(setIndex = k, reps = repsCount))
+                        }
+                    }
+
                     exercisesList.add(
                         CompletedExercise(
-                            name = exItem.getString("name"),
-                            setsCompleted = exItem.getInt("setsCompleted"),
-                            targetSets = exItem.getInt("targetSets"),
-                            reps = exItem.getString("reps")
+                            name = name,
+                            targetSets = targetSets,
+                            loggedSets = loggedSetsList
                         )
                     )
                 }
@@ -88,9 +113,16 @@ class WorkoutViewModel(private val context: Context) : ViewModel() {
             log.completedExercises.forEach { ex ->
                 val exObj = JSONObject()
                 exObj.put("name", ex.name)
-                exObj.put("setsCompleted", ex.setsCompleted)
                 exObj.put("targetSets", ex.targetSets)
-                exObj.put("reps", ex.reps)
+                
+                val setsArray = JSONArray()
+                ex.loggedSets.forEach { setLog ->
+                    val setObj = JSONObject()
+                    setObj.put("setIndex", setLog.setIndex)
+                    setObj.put("reps", setLog.reps)
+                    setsArray.put(setObj)
+                }
+                exObj.put("loggedSets", setsArray)
                 exercisesArray.put(exObj)
             }
             jsonObj.put("completedExercises", exercisesArray)
