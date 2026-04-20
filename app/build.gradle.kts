@@ -2,16 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
 }
 
 android {
-    namespace = "com.avanza.fitnessbodyrecomposition"
+    namespace = "com.tsapps.fitnessbodyrecomposition"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.avanza.fitnessbodyrecomposition"
+        applicationId = "com.tsapps.fitnessbodyrecomposition"
         minSdk = 27
         targetSdk = 36
         versionCode = 1
@@ -33,9 +34,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+    // Remove compilerOptions from here
     buildFeatures {
         compose = true
     }
@@ -73,4 +72,14 @@ dependencies {
 
     // Google Fonts (Inter)
     implementation(libs.androidx.compose.ui.text.google.fonts)
+
+    //Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+    }
 }

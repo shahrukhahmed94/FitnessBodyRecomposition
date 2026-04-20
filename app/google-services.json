@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "52971380802",
+    "project_id": "fitnessbodyrecomposition",
+    "storage_bucket": "fitnessbodyrecomposition.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:52971380802:android:946619c647a181d696cddb",
+        "android_client_info": {
+          "package_name": "com.tsapps.fitnessbodyrecomposition"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuUOwFySOCqZEwRkx804ZeyH9QMyjy7kg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
