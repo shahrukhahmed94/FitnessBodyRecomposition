@@ -137,7 +137,49 @@ data class NutritionUiState(
     val totalCalories: Int = 0,
     val totalProtein: Int = 0,
     val totalCarbs: Int = 0,
-    val totalFat: Int = 0
+    val totalFat: Int = 0,
+    val recommendedDietPlan: List<DietPlanItem> = listOf(
+        DietPlanItem(
+            name = "High-Protein Breakfast",
+            description = "Oatmeal with protein powder, berries, and a handful of almonds.",
+            calories = 450,
+            protein = 35,
+            carbs = 45,
+            fat = 12
+        ),
+        DietPlanItem(
+            name = "Lean Power Lunch",
+            description = "Grilled chicken breast with quinoa and steamed broccoli.",
+            calories = 550,
+            protein = 45,
+            carbs = 50,
+            fat = 15
+        ),
+        DietPlanItem(
+            name = "Pre-Workout Snack",
+            description = "Greek yogurt with a banana or an apple with peanut butter.",
+            calories = 250,
+            protein = 15,
+            carbs = 30,
+            fat = 8
+        ),
+        DietPlanItem(
+            name = "Recomp Dinner",
+            description = "Baked salmon or lean beef with sweet potato and asparagus.",
+            calories = 600,
+            protein = 40,
+            carbs = 40,
+            fat = 22
+        ),
+        DietPlanItem(
+            name = "Night Recovery",
+            description = "Casein protein shake or low-fat cottage cheese with seeds.",
+            calories = 200,
+            protein = 25,
+            carbs = 10,
+            fat = 5
+        )
+    )
 )
 
 data class Meal(
@@ -149,4 +191,13 @@ data class Meal(
     val carbs: Int,
     val fat: Int,
     val timestamp: Long
+)
+
+data class DietPlanItem(
+    val name: String,
+    val description: String,
+    val calories: Int,
+    val protein: Int,
+    val carbs: Int,
+    val fat: Int
 )

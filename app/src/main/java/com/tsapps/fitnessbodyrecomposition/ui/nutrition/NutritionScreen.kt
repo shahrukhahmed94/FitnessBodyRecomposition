@@ -3,6 +3,7 @@ package com.tsapps.fitnessbodyrecomposition.ui.nutrition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -131,6 +132,24 @@ fun NutritionScreen(
                 }
             }
             
+            // Recommended Diet Plan
+            item {
+                Text(
+                    text = "Recommended Diet Plan",
+                    color = TextGrey,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(bottom = 8.dp)
+                ) {
+                    items(nutritionState.recommendedDietPlan) { planItem ->
+                        DietPlanCard(planItem)
+                    }
+                }
+            }
+            
             // Meals List Header
             item {
                 Text(
@@ -229,4 +248,49 @@ fun MealCard(meal: Meal, onDelete: () -> Unit) {
 fun formatTime(timestamp: Long): String {
     val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
     return sdf.format(Date(timestamp))
+}
+
+@Composable
+fun DietPlanCard(item: DietPlanItem) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier
+            .width(280.dp)
+            .padding(vertical = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = item.name,
+                color = NeonGreen,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleSmall
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = item.description,
+                color = TextWhite,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 2
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                DietMetric("P", "${item.protein}g")
+                DietMetric("C", "${item.carbs}g")
+                DietMetric("F", "${item.fat}g")
+                DietMetric("Cal", "${item.calories}")
+            }
+        }
+    }
+}
+
+@Composable
+fun DietMetric(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = label, color = TextGrey, style = MaterialTheme.typography.labelSmall)
+        Text(text = value, color = TextWhite, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+    }
 }
