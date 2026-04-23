@@ -3,6 +3,8 @@ package com.tsapps.fitnessbodyrecomposition.ui.progress
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -142,6 +144,42 @@ fun ProgressScreen(
                                             }
                                         )
                                     }
+                                }
+                            }
+                        }
+
+                        if (uiState.uniqueExercises.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(horizontal = 4.dp)
+                            ) {
+                                items(uiState.uniqueExercises) { exercise ->
+                                    val isSelected = exercise == uiState.selectedExercise
+                                    FilterChip(
+                                        selected = isSelected,
+                                        onClick = { viewModel.selectExercise(exercise) },
+                                        label = { 
+                                            Text(
+                                                text = exercise,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                            ) 
+                                        },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            containerColor = Color.Transparent,
+                                            labelColor = TextGrey,
+                                            selectedContainerColor = NeonGreen.copy(alpha = 0.2f),
+                                            selectedLabelColor = NeonGreen
+                                        ),
+                                        border = FilterChipDefaults.filterChipBorder(
+                                            borderColor = TextGrey.copy(alpha = 0.3f),
+                                            selectedBorderColor = NeonGreen,
+                                            borderWidth = 1.dp,
+                                            selectedBorderWidth = 1.dp
+                                        ),
+                                        shape = RoundedCornerShape(16.dp)
+                                    )
                                 }
                             }
                         }
