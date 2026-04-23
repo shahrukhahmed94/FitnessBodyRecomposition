@@ -43,6 +43,9 @@ val mockExercises = mapOf(
     "pull" to listOf(
         Exercise("Deadlift", 3, "5-8"),
         Exercise("Pull Ups", 3, "AMRAP"),
+        Exercise("Lat Pulldown", 3, "8-12"),
+        Exercise("Horizontal Pulldown", 3, "8-12"),
+        Exercise("T-Bar Rows", 3, "8-12"),
         Exercise("Barbell Rows", 3, "8-12"),
         Exercise("Face Pulls", 3, "12-15"),
         Exercise("Bicep Curls", 3, "10-12")
@@ -75,6 +78,7 @@ fun ActiveWorkoutScreen(
     // State map to track checkbox toggles: Key is "ExerciseName_SetNumber"
     val completedSets = remember { mutableStateMapOf<String, Boolean>() }
     val enteredReps = remember { mutableStateMapOf<String, String>() }
+    val enteredWeights = remember { mutableStateMapOf<String, String>() }
     
     Scaffold(
         topBar = {
@@ -103,8 +107,10 @@ fun ActiveWorkoutScreen(
                             for (i in 0 until ex.sets) {
                                 if (completedSets["${ex.name}_${i}"] == true) {
                                     val repsInput = enteredReps["${ex.name}_${i}"]
+                                    val weightInput = enteredWeights["${ex.name}_${i}"]
                                     val repsInt = repsInput?.toIntOrNull() ?: 0
-                                    loggedDetails.add(LoggedSet(setIndex = i, reps = repsInt))
+                                    val weightFloat = weightInput?.toFloatOrNull() ?: 0f
+                                    loggedDetails.add(LoggedSet(setIndex = i, reps = repsInt, weight = weightFloat))
                                 }
                             }
                             CompletedExercise(
@@ -150,11 +156,15 @@ fun ActiveWorkoutScreen(
                     exercise = exercise,
                     completedSets = completedSets,
                     enteredReps = enteredReps,
+                    enteredWeights = enteredWeights,
                     onSetToggled = { setIndex, isChecked ->
                         completedSets["${exercise.name}_$setIndex"] = isChecked
                     },
                     onRepsChanged = { setIndex, repsVal ->
                         enteredReps["${exercise.name}_$setIndex"] = repsVal
+                    },
+                    onWeightChanged = { setIndex, weightVal ->
+                        enteredWeights["${exercise.name}_$setIndex"] = weightVal
                     }
                 )
             }
@@ -167,8 +177,10 @@ fun ExerciseCard(
     exercise: Exercise,
     completedSets: Map<String, Boolean>,
     enteredReps: Map<String, String>,
+    enteredWeights: Map<String, String>,
     onSetToggled: (Int, Boolean) -> Unit,
-    onRepsChanged: (Int, String) -> Unit
+    onRepsChanged: (Int, String) -> Unit,
+    onWeightChanged: (Int, String) -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
@@ -186,6 +198,7 @@ fun ExerciseCard(
              repeat(exercise.sets) { setNum ->
                  val isChecked = completedSets["${exercise.name}_$setNum"] == true
                  val repsVal = enteredReps["${exercise.name}_$setNum"] ?: ""
+                 val weightVal = enteredWeights["${exercise.name}_$setNum"] ?: ""
                  
                  Row(
                      modifier = Modifier
@@ -193,13 +206,29 @@ fun ExerciseCard(
                          .padding(vertical = 4.dp),
                      verticalAlignment = Alignment.CenterVertically
                  ) {
-                     Text(text = "${setNum + 1}", color = TextGrey, modifier = Modifier.width(30.dp))
-                     Text(text = "Target: ${exercise.reps}", color = TextGrey, modifier = Modifier.weight(1f))
+                     Text(text = "${setNum + 1}", color = TextGrey, modifier = Modifier.width(20.dp))
+                     Text(text = exercise.reps, color = TextGrey, modifier = Modifier.weight(1f))
+                     
+                     OutlinedTextField(
+                         value = weightVal,
+                         onValueChange = { onWeightChanged(setNum, it) },
+                         modifier = Modifier.width(70.dp).padding(end = 8.dp),
+                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                         colors = OutlinedTextFieldDefaults.colors(
+                             focusedBorderColor = NeonGreen,
+                             unfocusedBorderColor = TextGrey,
+                             focusedTextColor = TextWhite,
+                             unfocusedTextColor = TextWhite
+                         ),
+                         singleLine = true,
+                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                         placeholder = { Text("kg", color = TextGrey, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
+                     )
                      
                      OutlinedTextField(
                          value = repsVal,
                          onValueChange = { onRepsChanged(setNum, it) },
-                         modifier = Modifier.width(80.dp).padding(end = 16.dp),
+                         modifier = Modifier.width(60.dp).padding(end = 8.dp),
                          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                          colors = OutlinedTextFieldDefaults.colors(
                              focusedBorderColor = NeonGreen,
@@ -209,7 +238,7 @@ fun ExerciseCard(
                          ),
                          singleLine = true,
                          textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                         placeholder = { Text("0", color = TextGrey, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
+                         placeholder = { Text("reps", color = TextGrey, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
                      )
                      
                      Icon(

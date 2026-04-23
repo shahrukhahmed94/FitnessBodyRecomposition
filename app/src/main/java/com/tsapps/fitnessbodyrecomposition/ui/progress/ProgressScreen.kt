@@ -43,6 +43,11 @@ fun ProgressScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -96,7 +101,74 @@ fun ProgressScreen(
                     }
                 }
             }
-
+            // Progressive Overload Graph
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = SurfaceColor),
+                    shape = MaterialTheme.shapes.large,
+                    modifier = Modifier.fillMaxWidth().height(320.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Progressive Overload",
+                                color = TextWhite,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            
+                            Box {
+                                TextButton(onClick = { expanded = true }) {
+                                    Text(
+                                        text = uiState.selectedExercise.ifEmpty { "Select Exercise" },
+                                        color = NeonGreen
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    modifier = Modifier.background(SurfaceColor)
+                                ) {
+                                    uiState.uniqueExercises.forEach { exercise ->
+                                        DropdownMenuItem(
+                                            text = { Text(exercise, color = TextWhite) },
+                                            onClick = {
+                                                viewModel.selectExercise(exercise)
+                                                expanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        if (uiState.exerciseWeightHistory.isNotEmpty()) {
+                            LineGraph(
+                                dataPoints = uiState.exerciseWeightHistory,
+                                modifier = Modifier.fillMaxSize(),
+                                lineColor = NeonGreen
+                            )
+                        } else {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = if (uiState.selectedExercise.isEmpty()) 
+                                        "No exercises logged yet" 
+                                    else "Not enough data for ${uiState.selectedExercise}", 
+                                    color = TextGrey,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            
             // Stats Grid
             item {
                 Row(

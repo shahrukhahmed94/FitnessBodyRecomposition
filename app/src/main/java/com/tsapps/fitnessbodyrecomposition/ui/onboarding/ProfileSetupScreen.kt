@@ -23,13 +23,23 @@ import com.tsapps.fitnessbodyrecomposition.navigation.Screen
 import com.tsapps.fitnessbodyrecomposition.ui.theme.NeonGreen
 import com.tsapps.fitnessbodyrecomposition.ui.theme.TextGrey
 import com.tsapps.fitnessbodyrecomposition.ui.theme.TextWhite
+import com.tsapps.fitnessbodyrecomposition.data.model.User
+import com.tsapps.fitnessbodyrecomposition.data.repository.FirestoreService
+import org.koin.compose.koinInject
+import android.provider.Settings
+import kotlinx.coroutines.launch
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSetupScreen(navController: NavController) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val firestoreService: FirestoreService = koinInject()
 
     var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
     var currentWeight by remember { mutableStateOf("") }
     var targetWeight by remember { mutableStateOf("") }
@@ -58,6 +68,8 @@ fun ProfileSetupScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         SetupTextField(value = name, onValueChange = { name = it }, label = "Name", capitalization = KeyboardCapitalization.Words)
+        Spacer(modifier = Modifier.height(12.dp))
+        SetupTextField(value = email, onValueChange = { email = it }, label = "Email", keyboardType = KeyboardType.Email)
         Spacer(modifier = Modifier.height(12.dp))
         SetupTextField(value = age, onValueChange = { age = it }, label = "Age", keyboardType = KeyboardType.Number)
         Spacer(modifier = Modifier.height(12.dp))
@@ -102,9 +114,30 @@ fun ProfileSetupScreen(navController: NavController) {
                     val totalCm = (ft * 30.48) + (inch * 2.54)
                     finalHeight = totalCm.toInt().toString()
                 }
-                saveDataAndNavigate(context, navController, name, age, finalHeight, currentWeight, targetWeight) 
+                
+                
+                scope.launch {
+                    val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+                    val fcmToken = try {
+                        FirebaseMessaging.getInstance().token.await()
+                    } catch (e: Exception) {
+                        ""
+                    }
+                    val user = User(
+                        id = androidId,
+                        name = name,
+                        email = email,
+                        age = age,
+                        height = finalHeight,
+                        weight = currentWeight,
+                        targetWeight = targetWeight,
+                        fcmToken = fcmToken
+                    )
+                    firestoreService.saveUser(user)
+                }
+                saveDataAndNavigate(context, navController, name, email, age, finalHeight, currentWeight, targetWeight)
             },
-            enabled = name.isNotBlank() && age.isNotBlank() && currentWeight.isNotBlank() && targetWeight.isNotBlank() && ((isCm && heightCm.isNotBlank()) || (!isCm && heightFeet.isNotBlank())),
+            enabled = name.isNotBlank() && email.contains("@") && age.isNotBlank() && currentWeight.isNotBlank() && targetWeight.isNotBlank() && ((isCm && heightCm.isNotBlank()) || (!isCm && heightFeet.isNotBlank())),
             colors = ButtonDefaults.buttonColors(
                 containerColor = NeonGreen,
                 disabledContainerColor = NeonGreen.copy(alpha = 0.3f)
@@ -155,10 +188,11 @@ fun SetupTextField(
     )
 }
 
-fun saveDataAndNavigate(context: Context, navController: NavController, name: String, age: String, height: String, weight: String, targetWeight: String) {
+fun saveDataAndNavigate(context: Context, navController: NavController, name: String, email: String, age: String, height: String, weight: String, targetWeight: String) {
     val sharedPref = context.getSharedPreferences("fitness_prefs", Context.MODE_PRIVATE)
     with(sharedPref.edit()) {
         putString("user_name", name)
+        putString("user_email", email)
         putString("age", age)
         putString("height", height)
         putString("weight", weight)

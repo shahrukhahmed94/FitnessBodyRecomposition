@@ -25,6 +25,99 @@ class DashboardViewModel(private val context: Context) : ViewModel() {
     fun refresh() {
         loadUserData()
         updateGreeting()
+        loadWorkoutHistory()
+    }
+
+    private fun loadWorkoutHistory() {
+        val sharedPref = context.getSharedPreferences("fitness_prefs", Context.MODE_PRIVATE)
+        val savedLogsJson = sharedPref.getString("workout_logs", "[]") ?: "[]"
+        val logsArray = JSONArray(savedLogsJson)
+        
+        val allExercises = mutableSetOf<String>()
+        val exerciseData = mutableMapOf<String, MutableMap<Long, Double>>() // Exercise -> Map<Date, MaxWeight>
+
+        for (i in 0 until logsArray.length()) {
+            val logObj = logsArray.getJSONObject(i)
+            val date = logObj.getLong("date")
+            val exercisesArray = logObj.optJSONArray("completedExercises") ?: JSONArray()
+            
+            for (j in 0 until exercisesArray.length()) {
+                val exObj = exercisesArray.getJSONObject(j)
+                val exName = exObj.getString("name")
+                allExercises.add(exName)
+                
+                val setsArray = exObj.optJSONArray("loggedSets") ?: JSONArray()
+                var maxWeightInWorkout = 0.0
+                for (k in 0 until setsArray.length()) {
+                    val setObj = setsArray.getJSONObject(k)
+                    val weight = setObj.optDouble("weight", 0.0)
+                    if (weight > maxWeightInWorkout) maxWeightInWorkout = weight
+                }
+                
+                if (maxWeightInWorkout > 0) {
+                    val dateMap = exerciseData.getOrPut(exName) { mutableMapOf() }
+                    dateMap[date] = maxWeightInWorkout
+                }
+            }
+        }
+        
+        val sortedExercises = allExercises.toList().sorted()
+        val initialSelected = if (sortedExercises.isNotEmpty()) sortedExercises[0] else ""
+        
+        _uiState.update { 
+            it.copy(
+                uniqueExercises = sortedExercises,
+                selectedExercise = initialSelected
+            ) 
+        }
+        
+        if (initialSelected.isNotEmpty()) {
+            updateExerciseHistory(initialSelected, exerciseData)
+        }
+    }
+
+    fun selectExercise(name: String) {
+        val sharedPref = context.getSharedPreferences("fitness_prefs", Context.MODE_PRIVATE)
+        val savedLogsJson = sharedPref.getString("workout_logs", "[]") ?: "[]"
+        val logsArray = JSONArray(savedLogsJson)
+        
+        val dateMap = mutableMapOf<Long, Double>()
+        for (i in 0 until logsArray.length()) {
+            val logObj = logsArray.getJSONObject(i)
+            val date = logObj.getLong("date")
+            val exercisesArray = logObj.optJSONArray("completedExercises") ?: JSONArray()
+            
+            for (j in 0 until exercisesArray.length()) {
+                val exObj = exercisesArray.getJSONObject(j)
+                if (exObj.getString("name") == name) {
+                    val setsArray = exObj.optJSONArray("loggedSets") ?: JSONArray()
+                    var maxWeight = 0.0
+                    for (k in 0 until setsArray.length()) {
+                        val setObj = setsArray.getJSONObject(k)
+                        val w = setObj.optDouble("weight", 0.0)
+                        if (w > maxWeight) maxWeight = w
+                    }
+                    if (maxWeight > 0) dateMap[date] = maxWeight
+                }
+            }
+        }
+        
+        // Sort by date and map to weight list
+        val history = dateMap.toSortedMap().values.toList()
+        
+        _uiState.update { 
+            it.copy(
+                selectedExercise = name,
+                exerciseWeightHistory = history
+            ) 
+        }
+    }
+
+    private fun updateExerciseHistory(name: String, fullData: Map<String, MutableMap<Long, Double>>) {
+        val history = fullData[name]?.toSortedMap()?.values?.toList() ?: emptyList()
+        _uiState.update { 
+            it.copy(exerciseWeightHistory = history) 
+        }
     }
 
     private fun loadUserData() {
@@ -233,5 +326,8 @@ data class DashboardUiState(
     val fat: Int = 65,
     val currentWeight: Double = 0.0,
     val weightHistory: List<Double> = emptyList(),
-    val weightLogs: List<WeightLog> = emptyList()
+    val weightLogs: List<WeightLog> = emptyList(),
+    val uniqueExercises: List<String> = emptyList(),
+    val selectedExercise: String = "",
+    val exerciseWeightHistory: List<Double> = emptyList()
 )

@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 data class WorkoutUiState(
     val workoutLogs: List<WorkoutLog> = emptyList()
@@ -50,7 +53,8 @@ class WorkoutViewModel(private val context: Context) : ViewModel() {
                             loggedSetsList.add(
                                 LoggedSet(
                                     setIndex = setObj.getInt("setIndex"),
-                                    reps = setObj.getInt("reps")
+                                    reps = setObj.getInt("reps"),
+                                    weight = setObj.optDouble("weight", 0.0).toFloat()
                                 )
                             )
                         }
@@ -88,17 +92,32 @@ class WorkoutViewModel(private val context: Context) : ViewModel() {
     }
 
     fun logWorkout(routineId: String, routineName: String, completedExercises: List<CompletedExercise> = emptyList()) {
+        val now = System.currentTimeMillis()
         val newLog = WorkoutLog(
-            date = System.currentTimeMillis(),
+            date = now,
             routineId = routineId,
             routineName = routineName,
             completedExercises = completedExercises
         )
         
-        val updatedLogs = listOf(newLog) + _uiState.value.workoutLogs
-        saveLogsToPrefs(updatedLogs)
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayStr = sdf.format(Date(now))
         
-        _uiState.update { it.copy(workoutLogs = updatedLogs) }
+        val currentLogs = _uiState.value.workoutLogs.toMutableList()
+        val existingIndex = currentLogs.indexOfFirst { 
+            it.routineId == routineId && sdf.format(Date(it.date)) == todayStr 
+        }
+        
+        if (existingIndex != -1) {
+            // Replace existing log for today
+            currentLogs[existingIndex] = newLog
+        } else {
+            // Prepend new log
+            currentLogs.add(0, newLog)
+        }
+        
+        saveLogsToPrefs(currentLogs)
+        _uiState.update { it.copy(workoutLogs = currentLogs) }
     }
 
     private fun saveLogsToPrefs(logs: List<WorkoutLog>) {
@@ -120,6 +139,7 @@ class WorkoutViewModel(private val context: Context) : ViewModel() {
                     val setObj = JSONObject()
                     setObj.put("setIndex", setLog.setIndex)
                     setObj.put("reps", setLog.reps)
+                    setObj.put("weight", setLog.weight.toDouble())
                     setsArray.put(setObj)
                 }
                 exObj.put("loggedSets", setsArray)

@@ -2,7 +2,8 @@ package com.tsapps.fitnessbodyrecomposition.data.model
 
 data class LoggedSet(
     val setIndex: Int,
-    val reps: Int
+    val reps: Int,
+    val weight: Float = 0f
 )
 
 data class CompletedExercise(

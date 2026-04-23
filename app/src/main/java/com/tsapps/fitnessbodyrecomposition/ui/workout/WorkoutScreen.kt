@@ -198,7 +198,7 @@ fun WorkoutScreen(
                                     style = MaterialTheme.typography.bodySmall
                                 )
                                 if (ex.loggedSets.isNotEmpty()) {
-                                    val repsDetails = ex.loggedSets.joinToString(", ") { "Set ${it.setIndex + 1}: ${it.reps} reps" }
+                                    val repsDetails = ex.loggedSets.joinToString(", ") { "Set ${it.setIndex + 1}: ${it.reps} reps @ ${it.weight} kg" }
                                     Text(
                                         text = repsDetails,
                                         color = TextGrey.copy(alpha = 0.8f),
