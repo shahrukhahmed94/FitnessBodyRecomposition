@@ -108,7 +108,7 @@ fun ProgressScreen(
                 Card(
                     colors = CardDefaults.cardColors(containerColor = SurfaceColor),
                     shape = MaterialTheme.shapes.large,
-                    modifier = Modifier.fillMaxWidth().height(320.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -173,6 +173,8 @@ fun ProgressScreen(
                                             selectedLabelColor = NeonGreen
                                         ),
                                         border = FilterChipDefaults.filterChipBorder(
+                                            enabled = true,
+                                            selected = isSelected,
                                             borderColor = TextGrey.copy(alpha = 0.3f),
                                             selectedBorderColor = NeonGreen,
                                             borderWidth = 1.dp,
@@ -187,11 +189,36 @@ fun ProgressScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         if (uiState.exerciseWeightHistory.isNotEmpty()) {
-                            LineGraph(
-                                dataPoints = uiState.exerciseWeightHistory,
-                                modifier = Modifier.fillMaxSize(),
-                                lineColor = NeonGreen
-                            )
+                            val history = uiState.exerciseWeightHistory
+                            val latest = history.last()
+                            val personalBest = history.maxOrNull() ?: 0.0
+                            val first = history.first()
+                            val progress = latest - first
+                            
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp)
+                                    .background(Color.Black.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                MiniStatItem(label = "Latest", value = "${latest} kg")
+                                MiniStatItem(label = "Best", value = "${personalBest} kg")
+                                MiniStatItem(
+                                    label = "Progress", 
+                                    value = "${if (progress >= 0) "+" else ""}${String.format("%.1f", progress)} kg",
+                                    valueColor = if (progress >= 0) NeonGreen else Color.Red
+                                )
+                            }
+                            
+                            Box(modifier = Modifier.fillMaxWidth().height(200.dp).padding(top = 8.dp)) {
+                                LineGraph(
+                                    dataPoints = history,
+                                    modifier = Modifier.fillMaxSize(),
+                                    lineColor = NeonGreen
+                                )
+                            }
                         } else {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(
@@ -288,6 +315,14 @@ fun ProgressScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+fun MiniStatItem(label: String, value: String, valueColor: Color = NeonGreen) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = label, color = TextGrey, style = MaterialTheme.typography.labelSmall)
+        Text(text = value, color = valueColor, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
     }
 }
 

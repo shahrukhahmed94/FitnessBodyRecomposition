@@ -56,6 +56,12 @@ val mockExercises = mapOf(
         Exercise("Romanian Deadlifts", 3, "8-12"),
         Exercise("Leg Extensions", 3, "12-15"),
         Exercise("Calf Raises", 4, "15-20")
+    ),
+    "forearms" to listOf(
+        Exercise("Dumbbell Wrist Curls", 3, "12-15"),
+        Exercise("Reverse Wrist Curls", 3, "12-15"),
+        Exercise("Hammer Curls", 3, "10-12"),
+        Exercise("Farmer's Walk", 3, "30-45s")
     )
     // Add others if needed, fallback to generic
 )
