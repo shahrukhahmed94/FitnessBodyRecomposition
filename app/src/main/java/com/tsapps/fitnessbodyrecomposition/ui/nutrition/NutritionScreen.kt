@@ -181,6 +181,12 @@ fun NutritionScreen(
                     MealCard(meal, onDelete = { nutritionViewModel.deleteMeal(meal.id) })
                 }
             }
+            // Banner Ad
+            item {
+                com.tsapps.fitnessbodyrecomposition.ui.components.BannerAd(
+                    adUnitId = com.tsapps.fitnessbodyrecomposition.ui.components.AdUnitIds.NUTRITION_BANNER
+                )
+            }
             
             // Bottom spacing for FAB
             item {

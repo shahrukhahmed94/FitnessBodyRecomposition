@@ -22,6 +22,8 @@ import com.tsapps.fitnessbodyrecomposition.ui.theme.NeonGreen
 import com.tsapps.fitnessbodyrecomposition.ui.theme.SurfaceColor
 import com.tsapps.fitnessbodyrecomposition.ui.theme.TextGrey
 import com.tsapps.fitnessbodyrecomposition.ui.theme.TextWhite
+import com.tsapps.fitnessbodyrecomposition.ui.components.InterstitialAdHelper
+import com.tsapps.fitnessbodyrecomposition.ui.components.AdUnitIds
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +41,12 @@ fun AddMealScreen(
     var expanded by remember { mutableStateOf(false) }
     
     val mealTypes = listOf("Breakfast", "Lunch", "Dinner", "Snack")
+
+    // Preload interstitial ad
+    val context = androidx.compose.ui.platform.LocalContext.current
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        InterstitialAdHelper.loadAd(context, AdUnitIds.MEAL_LOGGED_INTERSTITIAL)
+    }
 
     Scaffold(
         topBar = {
@@ -259,7 +267,16 @@ fun AddMealScreen(
                             carbs = carbs.toIntOrNull() ?: 0,
                             fat = fat.toIntOrNull() ?: 0
                         )
-                        navController.popBackStack()
+                        
+                        // Show interstitial ad after saving, then navigate back
+                        val activity = context as? android.app.Activity
+                        if (activity != null) {
+                            InterstitialAdHelper.showAd(activity) {
+                                navController.popBackStack()
+                            }
+                        } else {
+                            navController.popBackStack()
+                        }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = NeonGreen),

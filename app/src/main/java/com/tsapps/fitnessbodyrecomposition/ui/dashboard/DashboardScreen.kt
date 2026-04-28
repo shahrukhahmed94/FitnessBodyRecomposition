@@ -195,6 +195,11 @@ fun DashboardScreen(
                 }
             }
         }
+
+        // Banner Ad
+        com.tsapps.fitnessbodyrecomposition.ui.components.BannerAd(
+            adUnitId = com.tsapps.fitnessbodyrecomposition.ui.components.AdUnitIds.DASHBOARD_BANNER
+        )
     }
 }
 

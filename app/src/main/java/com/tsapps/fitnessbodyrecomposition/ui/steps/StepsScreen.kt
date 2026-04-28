@@ -172,6 +172,13 @@ fun StepsScreen(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Banner Ad
+                com.tsapps.fitnessbodyrecomposition.ui.components.BannerAd(
+                    adUnitId = com.tsapps.fitnessbodyrecomposition.ui.components.AdUnitIds.STEPS_BANNER
+                )
             }
         }
     }

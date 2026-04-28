@@ -279,6 +279,13 @@ fun ProgressScreen(
                     HistoryItem(uiState.weightLogs[index])
                 }
             }
+
+            // Banner Ad
+            item {
+                com.tsapps.fitnessbodyrecomposition.ui.components.BannerAd(
+                    adUnitId = com.tsapps.fitnessbodyrecomposition.ui.components.AdUnitIds.PROGRESS_BANNER
+                )
+            }
         }
     }
 

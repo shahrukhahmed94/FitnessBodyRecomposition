@@ -19,6 +19,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessaging
 import com.tsapps.fitnessbodyrecomposition.data.repository.FirestoreService
+import com.tsapps.fitnessbodyrecomposition.ui.components.AppOpenAdManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,6 +43,10 @@ class MainActivity : ComponentActivity() {
         
         askNotificationPermission()
         initializeFCMToken()
+        
+        // Load and show App Open Ad
+        AppOpenAdManager.loadAd(this)
+        AppOpenAdManager.showAdIfAvailable(this)
 
         setContent {
             FitnessBodyRecompositionTheme {

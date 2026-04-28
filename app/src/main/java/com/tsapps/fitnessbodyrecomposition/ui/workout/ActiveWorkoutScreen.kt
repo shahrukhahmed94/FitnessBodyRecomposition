@@ -29,6 +29,8 @@ import com.tsapps.fitnessbodyrecomposition.data.model.LoggedSet
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import com.tsapps.fitnessbodyrecomposition.ui.components.InterstitialAdHelper
+import com.tsapps.fitnessbodyrecomposition.ui.components.AdUnitIds
 
 data class Exercise(val name: String, val sets: Int, val reps: String)
 
@@ -81,6 +83,12 @@ fun ActiveWorkoutScreen(
         Exercise("Isolation Movement", 3, "12-15")
     )
 
+    // Preload interstitial ad
+    val context = androidx.compose.ui.platform.LocalContext.current
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        InterstitialAdHelper.loadAd(context, AdUnitIds.WORKOUT_COMPLETE_INTERSTITIAL)
+    }
+
     // State map to track checkbox toggles: Key is "ExerciseName_SetNumber"
     val completedSets = remember { mutableStateMapOf<String, Boolean>() }
     val enteredReps = remember { mutableStateMapOf<String, String>() }
@@ -127,7 +135,16 @@ fun ActiveWorkoutScreen(
                         }
                     
                         viewModel.logWorkout(routineId, routineName, completedList)
-                        navController.popBackStack() 
+                        
+                        // Show interstitial ad after workout, then navigate back
+                        val activity = context as? android.app.Activity
+                        if (activity != null) {
+                            InterstitialAdHelper.showAd(activity) {
+                                navController.popBackStack()
+                            }
+                        } else {
+                            navController.popBackStack()
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = NeonGreen),
                     shape = MaterialTheme.shapes.small,

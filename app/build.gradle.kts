@@ -78,6 +78,9 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.messaging)
+
+    // Google Ads
+    implementation(libs.google.ads)
 }
 
 kotlin {

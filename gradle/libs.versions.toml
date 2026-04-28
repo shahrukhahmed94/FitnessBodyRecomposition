@@ -14,6 +14,7 @@ lifecycleViewModelCompose = "2.8.7"
 composeFonts = "1.7.8"
 googleServices = "4.4.4"
 firebaseBom = "34.12.0"
+googleAds = "23.6.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +41,7 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+google-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "googleAds" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
