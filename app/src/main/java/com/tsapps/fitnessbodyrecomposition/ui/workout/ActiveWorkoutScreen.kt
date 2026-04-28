@@ -185,9 +185,17 @@ fun ActiveWorkoutScreen(
                     },
                     onRepsChanged = { setIndex, repsVal ->
                         enteredReps["${exercise.name}_$setIndex"] = repsVal
+                        val weight = enteredWeights["${exercise.name}_$setIndex"]
+                        if (repsVal.isNotEmpty() && !weight.isNullOrEmpty()) {
+                            completedSets["${exercise.name}_$setIndex"] = true
+                        }
                     },
                     onWeightChanged = { setIndex, weightVal ->
                         enteredWeights["${exercise.name}_$setIndex"] = weightVal
+                        val reps = enteredReps["${exercise.name}_$setIndex"]
+                        if (weightVal.isNotEmpty() && !reps.isNullOrEmpty()) {
+                            completedSets["${exercise.name}_$setIndex"] = true
+                        }
                     }
                 )
             }
@@ -213,10 +221,21 @@ fun ExerciseCard(
         Column(modifier = Modifier.padding(16.dp)) {
              Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                  Text(text = exercise.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextWhite)
-                 // Placeholder for menu or info
              }
-             Spacer(modifier = Modifier.height(8.dp))
+             Spacer(modifier = Modifier.height(12.dp))
              
+             // Column Headers
+             Row(
+                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                 verticalAlignment = Alignment.CenterVertically
+             ) {
+                 Text(text = "SET", color = TextGrey, style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(30.dp), textAlign = TextAlign.Center)
+                 Text(text = "TARGET", color = TextGrey, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                 Text(text = "KG", color = TextGrey, style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(80.dp), textAlign = TextAlign.Center)
+                 Text(text = "REPS", color = TextGrey, style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(70.dp), textAlign = TextAlign.Center)
+                 Spacer(modifier = Modifier.width(40.dp)) // For Checkbox alignment
+             }
+
              // Render sets rows
              repeat(exercise.sets) { setNum ->
                  val isChecked = completedSets["${exercise.name}_$setNum"] == true
@@ -229,50 +248,98 @@ fun ExerciseCard(
                          .padding(vertical = 4.dp),
                      verticalAlignment = Alignment.CenterVertically
                  ) {
-                     Text(text = "${setNum + 1}", color = TextGrey, modifier = Modifier.width(20.dp))
-                     Text(text = exercise.reps, color = TextGrey, modifier = Modifier.weight(1f))
+                     Text(text = "${setNum + 1}", color = TextWhite, fontWeight = FontWeight.Bold, modifier = Modifier.width(30.dp), textAlign = TextAlign.Center)
+                     Text(text = exercise.reps, color = TextGrey, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                      
-                     OutlinedTextField(
+                     WorkoutValueDropdown(
                          value = weightVal,
                          onValueChange = { onWeightChanged(setNum, it) },
-                         modifier = Modifier.width(70.dp).padding(end = 8.dp),
-                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                         colors = OutlinedTextFieldDefaults.colors(
-                             focusedBorderColor = NeonGreen,
-                             unfocusedBorderColor = TextGrey,
-                             focusedTextColor = TextWhite,
-                             unfocusedTextColor = TextWhite
-                         ),
-                         singleLine = true,
-                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                         placeholder = { Text("kg", color = TextGrey, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
+                         options = listOf("0", "2.5", "5", "7.5", "10", "12.5", "15", "17.5", "20", "22.5", "25", "30", "35", "40", "45", "50", "60", "70", "80", "90", "100", "120", "140", "160", "180", "200"),
+                         placeholder = "kg",
+                         modifier = Modifier.width(80.dp).padding(end = 4.dp)
                      )
                      
-                     OutlinedTextField(
+                     WorkoutValueDropdown(
                          value = repsVal,
                          onValueChange = { onRepsChanged(setNum, it) },
-                         modifier = Modifier.width(60.dp).padding(end = 8.dp),
-                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                         colors = OutlinedTextFieldDefaults.colors(
-                             focusedBorderColor = NeonGreen,
-                             unfocusedBorderColor = TextGrey,
-                             focusedTextColor = TextWhite,
-                             unfocusedTextColor = TextWhite
-                         ),
-                         singleLine = true,
-                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                         placeholder = { Text("reps", color = TextGrey, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
+                         options = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "18", "20", "25", "30"),
+                         placeholder = "reps",
+                         modifier = Modifier.width(70.dp).padding(end = 4.dp)
                      )
                      
                      Icon(
                          imageVector = if (isChecked) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
                          contentDescription = "Complete",
                          tint = if (isChecked) NeonGreen else TextGrey,
-                         modifier = Modifier.clickable { onSetToggled(setNum, !isChecked) }.size(32.dp)
+                         modifier = Modifier.clickable { onSetToggled(setNum, !isChecked) }.size(32.dp).padding(start = 4.dp)
                      )
                  }
-                 HorizontalDivider(color = Color.DarkGray.copy(alpha = 0.5f))
+                 HorizontalDivider(color = Color.DarkGray.copy(alpha = 0.3f))
              }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WorkoutValueDropdown(
+    value: String,
+    onValueChange: (String) -> Unit,
+    options: List<String>,
+    placeholder: String,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = { onValueChange(it) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = if (placeholder == "kg") KeyboardType.Decimal else KeyboardType.Number),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = NeonGreen,
+                unfocusedBorderColor = TextGrey.copy(alpha = 0.3f),
+                focusedTextColor = TextWhite,
+                unfocusedTextColor = TextWhite,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
+            ),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+            placeholder = { 
+                Text(
+                    text = placeholder, 
+                    color = TextGrey.copy(alpha = 0.5f), 
+                    modifier = Modifier.fillMaxWidth(), 
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelSmall
+                ) 
+            },
+            trailingIcon = null // Keep it clean for narrow columns
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(SurfaceColor).heightIn(max = 250.dp)
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(text = option, color = TextWhite) },
+                    onClick = {
+                        onValueChange(option)
+                        expanded = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                )
+            }
         }
     }
 }

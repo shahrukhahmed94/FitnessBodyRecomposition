@@ -1,4 +1,4 @@
-# FitnessBodyRecomposition 🏋️‍♂️💪
+# FitnessBuddy 🏋️‍♂️💪
 
 A modern Android application designed to help users track their fitness journey, nutrition, and body recomposition progress. Built with Jetpack Compose and following modern Android development best practices.
 
