@@ -2,6 +2,9 @@ package com.tsapps.fitnessbodyrecomposition.navigation
 
 sealed class Screen(val route: String) {
     object Onboarding : Screen("onboarding")
+    object Welcome : Screen("welcome")
+    object Login : Screen("login")
+    object SignUp : Screen("signup")
     object ProfileSetup : Screen("profile_setup")
     object Profile : Screen("profile")
     object Dashboard : Screen("dashboard")

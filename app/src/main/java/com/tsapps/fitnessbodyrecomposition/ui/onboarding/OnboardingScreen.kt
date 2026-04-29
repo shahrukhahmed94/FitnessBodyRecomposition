@@ -189,7 +189,7 @@ fun OnboardingPage(item: OnboardingItem) {
 }
 
 fun completeOnboarding(context: Context, navController: NavController) {
-    navController.navigate(Screen.ProfileSetup.route) {
+    navController.navigate(Screen.Welcome.route) {
         popUpTo(Screen.Onboarding.route) { inclusive = true }
     }
 }

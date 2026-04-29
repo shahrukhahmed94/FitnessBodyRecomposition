@@ -22,6 +22,10 @@ import com.tsapps.fitnessbodyrecomposition.ui.progress.ProgressScreen
 import com.tsapps.fitnessbodyrecomposition.ui.workout.ActiveWorkoutScreen
 import com.tsapps.fitnessbodyrecomposition.ui.workout.WorkoutScreen
 import com.tsapps.fitnessbodyrecomposition.ui.workout.WorkoutViewModel
+import com.tsapps.fitnessbodyrecomposition.ui.auth.WelcomeScreen
+import com.tsapps.fitnessbodyrecomposition.ui.auth.LoginScreen
+import com.tsapps.fitnessbodyrecomposition.ui.auth.SignUpScreen
+import com.google.firebase.auth.FirebaseAuth
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -29,7 +33,14 @@ fun AppNavigation() {
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("fitness_prefs", Context.MODE_PRIVATE)
     val onboardingCompleted = sharedPref.getBoolean("onboarding_completed", false)
-    val startDestination = if (onboardingCompleted) Screen.Dashboard.route else Screen.Onboarding.route
+    val isGuest = sharedPref.getBoolean("is_guest", false)
+    val isLoggedIn = FirebaseAuth.getInstance().currentUser != null
+
+    val startDestination = when {
+        !onboardingCompleted -> Screen.Onboarding.route
+        isLoggedIn || isGuest -> Screen.Dashboard.route
+        else -> Screen.Welcome.route
+    }
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -41,6 +52,9 @@ fun AppNavigation() {
     Scaffold(
         bottomBar = {
             if (currentRoute != Screen.Onboarding.route && 
+                currentRoute != Screen.Welcome.route && 
+                currentRoute != Screen.Login.route && 
+                currentRoute != Screen.SignUp.route && 
                 currentRoute != Screen.ProfileSetup.route && 
                 currentRoute != Screen.Profile.route
             ) {
@@ -55,6 +69,15 @@ fun AppNavigation() {
         ) {
             composable(Screen.Onboarding.route) {
                 OnboardingScreen(navController)
+            }
+            composable(Screen.Welcome.route) {
+                WelcomeScreen(navController)
+            }
+            composable(Screen.Login.route) {
+                LoginScreen(navController)
+            }
+            composable(Screen.SignUp.route) {
+                SignUpScreen(navController)
             }
             composable(Screen.ProfileSetup.route) {
                 ProfileSetupScreen(navController)

@@ -122,7 +122,8 @@ class DashboardViewModel(private val context: Context) : ViewModel() {
 
     private fun loadUserData() {
         val sharedPref = context.getSharedPreferences("fitness_prefs", Context.MODE_PRIVATE)
-        val name = sharedPref.getString("user_name", "User") ?: "User"
+        val isGuest = sharedPref.getBoolean("is_guest", false)
+        val name = if (isGuest) "Guest" else sharedPref.getString("user_name", "User") ?: "User"
         val weight = sharedPref.getString("weight", "") ?: ""
         val height = sharedPref.getString("height", "") ?: ""
         val age = sharedPref.getString("age", "") ?: ""
