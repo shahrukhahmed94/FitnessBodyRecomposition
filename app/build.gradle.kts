@@ -82,6 +82,10 @@ dependencies {
 
     // Google Ads
     implementation(libs.google.ads)
+
+    // Coil for GIF loading
+    implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
 }
 
 kotlin {

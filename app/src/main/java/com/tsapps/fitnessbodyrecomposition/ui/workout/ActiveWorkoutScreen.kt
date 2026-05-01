@@ -28,6 +28,14 @@ import org.koin.androidx.compose.koinViewModel
 import com.tsapps.fitnessbodyrecomposition.data.model.CompletedExercise
 import com.tsapps.fitnessbodyrecomposition.data.model.LoggedSet
 import androidx.compose.foundation.text.KeyboardOptions
+import coil.compose.AsyncImage
+import coil.ImageLoader
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
+import android.os.Build
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
+import com.tsapps.fitnessbodyrecomposition.R
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import com.tsapps.fitnessbodyrecomposition.ui.components.InterstitialAdHelper
@@ -74,6 +82,34 @@ val mockExercises = mapOf(
         Exercise("Farmer's Walk", 3, "30-45s")
     )
     // Add others if needed, fallback to generic
+)
+
+val exerciseAnimations = mapOf(
+    "Bench Press" to R.drawable.anim_bench_press,
+    "Overhead Press" to R.drawable.anim_overhead_press,
+    "Incline Dumbbell Press" to R.drawable.anim_incline_dumbbell_press,
+    "Lateral Raises" to R.drawable.anim_lateral_raises,
+    "Tricep Pushdowns" to R.drawable.anim_tricep_pushdowns,
+    "Deadlift" to R.drawable.anim_deadlift,
+    "Pull Ups" to R.drawable.anim_pull_ups,
+    "Lat Pulldown" to R.drawable.anim_lat_pulldown,
+    "Horizontal Pulldown" to R.drawable.anim_horizontal_pulldown,
+    "T-Bar Rows" to R.drawable.anim_t_bar_rows,
+    "Barbell Rows" to R.drawable.anim_barbell_rows,
+    "Face Pulls" to R.drawable.anim_face_pulls,
+    "Bicep Curls" to R.drawable.anim_bicep_curls,
+    "Squats" to R.drawable.anim_squats,
+    "Leg Press" to R.drawable.anim_leg_press,
+    "Romanian Deadlifts" to R.drawable.anim_romanian_deadlifts,
+    "Leg Extensions" to R.drawable.anim_leg_extensions,
+    "Calf Raises" to R.drawable.anim_calf_raises,
+    "Dumbbell Wrist Curls" to R.drawable.anim_dumbbell_wrist_curls,
+    "Reverse Wrist Curls" to R.drawable.anim_reverse_wrist_curls,
+    "Hammer Curls" to R.drawable.anim_hammer_curls,
+    "Farmer's Walk" to R.drawable.anim_farmer_s_walk,
+    "Bodyweight Squats" to R.drawable.anim_bodyweight_squats,
+    "Push-Ups" to R.drawable.anim_push_ups,
+    "Plank" to R.drawable.anim_plank,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -312,8 +348,31 @@ fun ExerciseCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                 Text(text = exercise.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextWhite)
+             Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                 Text(text = exercise.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextWhite, modifier = Modifier.weight(1f))
+                 
+                 val context = LocalContext.current
+                 val imageLoader = remember {
+                     ImageLoader.Builder(context)
+                         .components {
+                             if (Build.VERSION.SDK_INT >= 28) {
+                                 add(ImageDecoderDecoder.Factory())
+                             } else {
+                                 add(coil.decode.GifDecoder.Factory())
+                             }
+                         }
+                         .build()
+                 }
+                 
+                 AsyncImage(
+                     model = ImageRequest.Builder(context)
+                         .data(exerciseAnimations[exercise.name] ?: R.drawable.exercise_anim) // Specific GIF or placeholder
+                         .crossfade(true)
+                         .build(),
+                     imageLoader = imageLoader,
+                     contentDescription = "Exercise Animation",
+                     modifier = Modifier.size(50.dp).clip(RoundedCornerShape(8.dp))
+                 )
              }
              Spacer(modifier = Modifier.height(12.dp))
              
