@@ -207,7 +207,11 @@ fun ProgressScreen(
                                 MiniStatItem(label = "Best", value = "${personalBest} kg")
                                 MiniStatItem(
                                     label = "Progress", 
-                                    value = "${if (progress >= 0) "+" else ""}${String.format("%.1f", progress)} kg",
+                                    value = if (history.size > 1) {
+                                        "${if (progress >= 0) "+" else ""}${String.format("%.1f", progress)} kg"
+                                    } else {
+                                        "---"
+                                    },
                                     valueColor = if (progress >= 0) NeonGreen else Color.Red
                                 )
                             }

@@ -369,6 +369,7 @@ private fun saveDataAndNavigate(context: Context, navController: NavController, 
         putString("target_weight", targetWeight)
         putBoolean("onboarding_completed", true)
         putBoolean("is_guest", false)
+        putString("last_synced_uid", FirebaseAuth.getInstance().currentUser?.uid)
         apply()
     }
     navController.navigate(Screen.Dashboard.route) {

@@ -12,8 +12,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.tsapps.fitnessbodyrecomposition.data.model.WeightLog
+import com.tsapps.fitnessbodyrecomposition.data.repository.FirestoreService
+import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
-class DashboardViewModel(private val context: Context) : ViewModel() {
+class DashboardViewModel(
+    private val context: Context,
+    private val firestoreService: FirestoreService
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
@@ -123,11 +130,44 @@ class DashboardViewModel(private val context: Context) : ViewModel() {
     private fun loadUserData() {
         val sharedPref = context.getSharedPreferences("fitness_prefs", Context.MODE_PRIVATE)
         val isGuest = sharedPref.getBoolean("is_guest", false)
-        val name = if (isGuest) "Guest" else sharedPref.getString("user_name", "User") ?: "User"
+        var currentName = if (isGuest) "Guest" else sharedPref.getString("user_name", "User") ?: "User"
         val weight = sharedPref.getString("weight", "") ?: ""
         val height = sharedPref.getString("height", "") ?: ""
         val age = sharedPref.getString("age", "") ?: ""
         val targetWeight = sharedPref.getString("target_weight", "") ?: ""
+
+        // Sync logic: Fetch from Firestore if name is default OR if UID changed
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        val lastSyncedUid = sharedPref.getString("last_synced_uid", "")
+        
+        if (!isGuest && firebaseUser != null && (currentName == "User" || firebaseUser.uid != lastSyncedUid)) {
+            viewModelScope.launch {
+                val userResult = firestoreService.getUser(firebaseUser.uid)
+                val user = userResult.getOrNull()
+                if (user != null) {
+                    // Save to prefs for next time
+                    with(sharedPref.edit()) {
+                        putString("user_name", user.name)
+                        putString("age", user.age)
+                        putString("height", user.height)
+                        putString("weight", user.weight)
+                        putString("target_weight", user.targetWeight)
+                        putString("last_synced_uid", firebaseUser.uid)
+                        apply()
+                    }
+                    _uiState.update { 
+                        it.copy(
+                            userName = user.name,
+                            age = user.age,
+                            height = user.height,
+                            weight = user.weight,
+                            targetWeight = user.targetWeight
+                        ) 
+                    }
+                    calculateRecomposition()
+                }
+            }
+        }
 
         val savedLogsJson = sharedPref.getString("weight_logs", "[]") ?: "[]"
         val logsArray = JSONArray(savedLogsJson)
@@ -144,7 +184,7 @@ class DashboardViewModel(private val context: Context) : ViewModel() {
 
         _uiState.update { 
             it.copy(
-                userName = name,
+                userName = currentName,
                 weight = weight,
                 height = height,
                 age = age,

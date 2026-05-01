@@ -23,16 +23,16 @@ fun LineGraph(
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
-        val spacing = width / (dataPoints.size - 1)
+        val isSinglePoint = dataPoints.size == 1
+        val spacing = if (isSinglePoint) 0f else width / (dataPoints.size - 1)
         
         val maxData = dataPoints.maxOrNull() ?: 1.0
         val minData = dataPoints.minOrNull() ?: 0.0
         val range = maxData - minData
         
-        // Helper to map data value to Y coordinate (flip Y because canvas 0,0 is top-left)
+        // Helper to map data value to Y coordinate
         fun yCoord(value: Double): Float {
             val normalized = (value - minData) / (if (range == 0.0) 1.0 else range)
-            // Leave some padding top and bottom
             return height - (normalized.toFloat() * height * 0.8f) - (height * 0.1f)
         }
 
@@ -40,20 +40,17 @@ fun LineGraph(
         val fillPath = Path()
         
         dataPoints.forEachIndexed { index, value ->
-            val x = index * spacing
+            val x = if (isSinglePoint) width / 2 else index * spacing
             val y = yCoord(value)
             
             if (index == 0) {
                 path.moveTo(x, y)
-                fillPath.moveTo(x, height) // Start from bottom-left for fill
+                fillPath.moveTo(x, height)
                 fillPath.lineTo(x, y)
             } else {
-                // Smooth curve (cubic bezier) could be better, but simple line for now
-                // actually let's do a simple cubic bezier for smoothness
                 val prevX = (index - 1) * spacing
                 val prevY = yCoord(dataPoints[index - 1])
                 
-                // Control points for smooth curve
                 val controlPoint1X = prevX + (x - prevX) / 2
                 val controlPoint1Y = prevY
                 val controlPoint2X = prevX + (x - prevX) / 2
@@ -64,34 +61,35 @@ fun LineGraph(
             }
         }
         
-        // Finish fill path
-        fillPath.lineTo(width, height)
-        fillPath.close()
+        if (!isSinglePoint) {
+            fillPath.lineTo(width, height)
+            fillPath.close()
 
-        // Draw Gradient Fill
-        drawPath(
-            path = fillPath,
-            brush = Brush.verticalGradient(
-                colors = listOf(
-                    lineColor.copy(alpha = 0.3f),
-                    Color.Transparent
+            // Draw Gradient Fill
+            drawPath(
+                path = fillPath,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        lineColor.copy(alpha = 0.3f),
+                        Color.Transparent
+                    )
                 )
             )
-        )
 
-        // Draw Line
-        drawPath(
-            path = path,
-            color = lineColor,
-            style = Stroke(
-                width = 3.dp.toPx(),
-                cap = StrokeCap.Round
+            // Draw Line
+            drawPath(
+                path = path,
+                color = lineColor,
+                style = Stroke(
+                    width = 3.dp.toPx(),
+                    cap = StrokeCap.Round
+                )
             )
-        )
+        }
         
         // Draw Points
         dataPoints.forEachIndexed { index, value ->
-            val x = index * spacing
+            val x = if (isSinglePoint) width / 2 else index * spacing
             val y = yCoord(value)
             drawCircle(
                 color = lineColor,

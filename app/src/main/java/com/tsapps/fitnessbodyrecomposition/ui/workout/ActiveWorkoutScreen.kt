@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,6 +36,13 @@ import com.tsapps.fitnessbodyrecomposition.ui.components.AdUnitIds
 data class Exercise(val name: String, val sets: Int, val reps: String)
 
 val mockExercises = mapOf(
+    "home" to listOf(
+        Exercise("Bodyweight Squats", 3, "15-20"),
+        Exercise("Push-Ups", 3, "AMRAP"),
+        Exercise("Lunges", 3, "12-15/leg"),
+        Exercise("Plank", 3, "60s"),
+        Exercise("Burpees", 3, "10-15")
+    ),
     "push" to listOf(
         Exercise("Bench Press", 3, "8-12"),
         Exercise("Overhead Press", 3, "8-12"),
@@ -76,12 +84,14 @@ fun ActiveWorkoutScreen(
     viewModel: WorkoutViewModel = koinViewModel()
 ) {
     val routineName = mockRoutines.find { it.id == routineId }?.name ?: "Workout"
-    val exercises = mockExercises[routineId] ?: listOf(
+    val initialExercises = mockExercises[routineId] ?: if (routineId == "custom") emptyList() else listOf(
         Exercise("Warm Up", 1, "5 mins"),
         Exercise("Main Compound Lift", 3, "5-8"),
         Exercise("Accessory Movement", 3, "8-12"),
         Exercise("Isolation Movement", 3, "12-15")
     )
+    val exercises = remember { mutableStateListOf(*initialExercises.toTypedArray()) }
+    var showAddExerciseDialog by remember { mutableStateOf(false) }
 
     // Preload interstitial ad
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -199,7 +209,90 @@ fun ActiveWorkoutScreen(
                     }
                 )
             }
+            
+            if (routineId == "custom") {
+                item {
+                    Button(
+                        onClick = { showAddExerciseDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = SurfaceColor, contentColor = NeonGreen),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Add Exercise")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Add Custom Exercise", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+            
+            item {
+                Spacer(modifier = Modifier.height(80.dp)) // Added space for bottom bar
+            }
         }
+    }
+
+    if (showAddExerciseDialog) {
+        var newExerciseName by remember { mutableStateOf("") }
+        var newExerciseSets by remember { mutableStateOf("3") }
+        var newExerciseReps by remember { mutableStateOf("8-12") }
+
+        AlertDialog(
+            onDismissRequest = { showAddExerciseDialog = false },
+            containerColor = SurfaceColor,
+            titleContentColor = TextWhite,
+            textContentColor = TextGrey,
+            title = { Text("Add Custom Exercise") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = newExerciseName,
+                        onValueChange = { newExerciseName = it },
+                        label = { Text("Exercise Name", color = TextGrey) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = TextWhite, unfocusedTextColor = TextWhite,
+                            focusedBorderColor = NeonGreen, unfocusedBorderColor = TextGrey,
+                            cursorColor = NeonGreen
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newExerciseSets,
+                        onValueChange = { newExerciseSets = it },
+                        label = { Text("Target Sets", color = TextGrey) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = TextWhite, unfocusedTextColor = TextWhite,
+                            focusedBorderColor = NeonGreen, unfocusedBorderColor = TextGrey,
+                            cursorColor = NeonGreen
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newExerciseReps,
+                        onValueChange = { newExerciseReps = it },
+                        label = { Text("Target Reps (e.g. 8-12)", color = TextGrey) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = TextWhite, unfocusedTextColor = TextWhite,
+                            focusedBorderColor = NeonGreen, unfocusedBorderColor = TextGrey,
+                            cursorColor = NeonGreen
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val setsInt = newExerciseSets.toIntOrNull() ?: 3
+                    exercises.add(Exercise(newExerciseName.ifBlank { "Custom Exercise" }, setsInt, newExerciseReps))
+                    showAddExerciseDialog = false
+                }) {
+                    Text("Add", color = NeonGreen)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddExerciseDialog = false }) {
+                    Text("Cancel", color = TextGrey)
+                }
+            }
+        )
     }
 }
 

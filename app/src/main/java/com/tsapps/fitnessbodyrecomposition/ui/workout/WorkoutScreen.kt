@@ -39,16 +39,21 @@ import java.util.Date
 import java.util.Locale
 import com.tsapps.fitnessbodyrecomposition.data.model.WorkoutLog
 
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Add
+
 data class WorkoutRoutine(val id: String, val name: String, val duration: String, val icon: ImageVector)
 
 val mockRoutines = listOf(
+    WorkoutRoutine("home", "Home Workout", "30-45 min", Icons.Default.Home),
     WorkoutRoutine("push", "Push Day", "45-60 min", Icons.Default.FitnessCenter),
     WorkoutRoutine("pull", "Pull Day", "45-60 min", Icons.Default.FitnessCenter),
     WorkoutRoutine("legs", "Legs Day", "50-65 min", Icons.Default.FitnessCenter),
     WorkoutRoutine("upper", "Upper Body", "40-50 min", Icons.Default.FitnessCenter),
     WorkoutRoutine("lower", "Lower Body", "40-50 min", Icons.Default.FitnessCenter),
     WorkoutRoutine("cardio", "Cardio & Core", "30-45 min", Icons.Default.FitnessCenter),
-    WorkoutRoutine("forearms", "Forearms Focus", "15-20 min", Icons.Default.FitnessCenter)
+    WorkoutRoutine("forearms", "Forearms Focus", "15-20 min", Icons.Default.FitnessCenter),
+    WorkoutRoutine("custom", "Custom Workout", "Flexible", Icons.Default.Add)
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
