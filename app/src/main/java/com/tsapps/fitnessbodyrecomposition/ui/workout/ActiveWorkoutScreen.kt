@@ -49,14 +49,17 @@ val mockExercises = mapOf(
         Exercise("Push-Ups", 3, "AMRAP"),
         Exercise("Lunges", 3, "12-15/leg"),
         Exercise("Plank", 3, "60s"),
-        Exercise("Burpees", 3, "10-15")
+        Exercise("Burpees", 3, "10-15"),
+        Exercise("Jumping Jacks", 3, "30-45s")
     ),
     "push" to listOf(
         Exercise("Bench Press", 3, "8-12"),
         Exercise("Overhead Press", 3, "8-12"),
         Exercise("Incline Dumbbell Press", 3, "10-12"),
+        Exercise("Chest Fly", 3, "12-15"),
         Exercise("Lateral Raises", 3, "12-15"),
-        Exercise("Tricep Pushdowns", 3, "12-15")
+        Exercise("Tricep Pushdowns", 3, "12-15"),
+        Exercise("Overhead Tricep Extension", 3, "12-15")
     ),
     "pull" to listOf(
         Exercise("Deadlift", 3, "5-8"),
@@ -66,22 +69,56 @@ val mockExercises = mapOf(
         Exercise("T-Bar Rows", 3, "8-12"),
         Exercise("Barbell Rows", 3, "8-12"),
         Exercise("Face Pulls", 3, "12-15"),
-        Exercise("Bicep Curls", 3, "10-12")
+        Exercise("Bicep Curls", 3, "10-12"),
+        Exercise("Hammer Curls", 3, "10-12")
+    ),
+    "chest" to listOf(
+        Exercise("Bench Press", 4, "8-12"),
+        Exercise("Incline Dumbbell Press", 3, "10-12"),
+        Exercise("Chest Fly", 3, "12-15"),
+        Exercise("Cable Fly", 3, "12-15"),
+        Exercise("Lower Chest Fly", 3, "12-15"),
+        Exercise("Push-Ups", 3, "AMRAP"),
+        Exercise("Chest Dips", 3, "10-12")
+    ),
+    "back" to listOf(
+        Exercise("Deadlift", 3, "5-8"),
+        Exercise("Pull Ups", 3, "AMRAP"),
+        Exercise("Lat Pulldown", 3, "8-12"),
+        Exercise("Horizontal Pulldown", 3, "8-12"),
+        Exercise("T-Bar Rows", 3, "8-12"),
+        Exercise("Barbell Rows", 3, "8-12")
+    ),
+    "arms" to listOf(
+        Exercise("Bicep Curls", 3, "10-12"),
+        Exercise("Hammer Curls", 3, "10-12"),
+        Exercise("Tricep Pushdowns", 3, "12-15"),
+        Exercise("Overhead Tricep Extension", 3, "12-15"),
+        Exercise("Dumbbell Wrist Curls", 3, "12-15"),
+        Exercise("Reverse Wrist Curls", 3, "12-15")
+    ),
+    "shoulders" to listOf(
+        Exercise("Overhead Press", 4, "8-12"),
+        Exercise("Lateral Raises", 3, "12-15"),
+        Exercise("Face Pulls", 3, "12-15")
+    ),
+    "core" to listOf(
+        Exercise("Crunches", 3, "15-20"),
+        Exercise("Leg Raises", 3, "12-15"),
+        Exercise("Sit-ups", 3, "15-20"),
+        Exercise("Plank", 3, "60s")
     ),
     "legs" to listOf(
         Exercise("Squats", 3, "6-10"),
         Exercise("Leg Press", 3, "10-12"),
         Exercise("Romanian Deadlifts", 3, "8-12"),
         Exercise("Leg Extensions", 3, "12-15"),
+        Exercise("Leg Curls", 3, "12-15"),
+        Exercise("Glute Bridge", 3, "10-12"),
+        Exercise("Hip Thrust", 3, "10-12"),
+        Exercise("Bulgarian Split Squats", 3, "10-12"),
         Exercise("Calf Raises", 4, "15-20")
-    ),
-    "forearms" to listOf(
-        Exercise("Dumbbell Wrist Curls", 3, "12-15"),
-        Exercise("Reverse Wrist Curls", 3, "12-15"),
-        Exercise("Hammer Curls", 3, "10-12"),
-        Exercise("Farmer's Walk", 3, "30-45s")
     )
-    // Add others if needed, fallback to generic
 )
 
 val exerciseAnimations = mapOf(
@@ -102,14 +139,27 @@ val exerciseAnimations = mapOf(
     "Leg Press" to R.drawable.anim_leg_press,
     "Romanian Deadlifts" to R.drawable.anim_romanian_deadlifts,
     "Leg Extensions" to R.drawable.anim_leg_extensions,
+    "Leg Curls" to R.drawable.anim_leg_curls,
+    "Glute Bridge" to R.drawable.anim_glute_bridge,
+    "Hip Thrust" to R.drawable.anim_hip_thrust,
+    "Bulgarian Split Squats" to R.drawable.anim_bulgarian_split_squats,
     "Calf Raises" to R.drawable.anim_calf_raises,
     "Dumbbell Wrist Curls" to R.drawable.anim_dumbbell_wrist_curls,
     "Reverse Wrist Curls" to R.drawable.anim_reverse_wrist_curls,
     "Hammer Curls" to R.drawable.anim_hammer_curls,
+    "Overhead Tricep Extension" to R.drawable.anim_overhead_tricep_extension,
     "Farmer's Walk" to R.drawable.anim_farmer_s_walk,
     "Bodyweight Squats" to R.drawable.anim_bodyweight_squats,
     "Push-Ups" to R.drawable.anim_push_ups,
     "Plank" to R.drawable.anim_plank,
+    "Crunches" to R.drawable.anim_crunches,
+    "Leg Raises" to R.drawable.anim_leg_raises,
+    "Sit-ups" to R.drawable.anim_sit_ups,
+    "Chest Dips" to R.drawable.anim_chest_dips,
+    "Chest Fly" to R.drawable.anim_chest_fly,
+    "Cable Fly" to R.drawable.anim_cable_fly,
+    "Lower Chest Fly" to R.drawable.anim_lower_chest_fly,
+    "Jumping Jacks" to R.drawable.anim_jumping_jacks,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -232,7 +282,8 @@ fun ActiveWorkoutScreen(
                     onRepsChanged = { setIndex, repsVal ->
                         enteredReps["${exercise.name}_$setIndex"] = repsVal
                         val weight = enteredWeights["${exercise.name}_$setIndex"]
-                        if (repsVal.isNotEmpty() && !weight.isNullOrEmpty()) {
+                        val isHome = routineId == "home"
+                        if (repsVal.isNotEmpty() && (isHome || !weight.isNullOrEmpty())) {
                             completedSets["${exercise.name}_$setIndex"] = true
                         }
                     },
@@ -242,7 +293,8 @@ fun ActiveWorkoutScreen(
                         if (weightVal.isNotEmpty() && !reps.isNullOrEmpty()) {
                             completedSets["${exercise.name}_$setIndex"] = true
                         }
-                    }
+                    },
+                    isHomeWorkout = routineId == "home"
                 )
             }
             
@@ -340,7 +392,8 @@ fun ExerciseCard(
     enteredWeights: Map<String, String>,
     onSetToggled: (Int, Boolean) -> Unit,
     onRepsChanged: (Int, String) -> Unit,
-    onWeightChanged: (Int, String) -> Unit
+    onWeightChanged: (Int, String) -> Unit,
+    isHomeWorkout: Boolean = false
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
@@ -383,7 +436,9 @@ fun ExerciseCard(
              ) {
                  Text(text = "SET", color = TextGrey, style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(30.dp), textAlign = TextAlign.Center)
                  Text(text = "TARGET", color = TextGrey, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                 Text(text = "KG", color = TextGrey, style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(80.dp), textAlign = TextAlign.Center)
+                 if (!isHomeWorkout) {
+                     Text(text = "KG", color = TextGrey, style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(80.dp), textAlign = TextAlign.Center)
+                 }
                  Text(text = "REPS", color = TextGrey, style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(70.dp), textAlign = TextAlign.Center)
                  Spacer(modifier = Modifier.width(40.dp)) // For Checkbox alignment
              }
@@ -403,13 +458,15 @@ fun ExerciseCard(
                      Text(text = "${setNum + 1}", color = TextWhite, fontWeight = FontWeight.Bold, modifier = Modifier.width(30.dp), textAlign = TextAlign.Center)
                      Text(text = exercise.reps, color = TextGrey, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                      
-                     WorkoutValueDropdown(
-                         value = weightVal,
-                         onValueChange = { onWeightChanged(setNum, it) },
-                         options = listOf("0", "2.5", "5", "7.5", "10", "12.5", "15", "17.5", "20", "22.5", "25", "30", "35", "40", "45", "50", "60", "70", "80", "90", "100", "120", "140", "160", "180", "200"),
-                         placeholder = "kg",
-                         modifier = Modifier.width(80.dp).padding(end = 4.dp)
-                     )
+                     if (!isHomeWorkout) {
+                         WorkoutValueDropdown(
+                             value = weightVal,
+                             onValueChange = { onWeightChanged(setNum, it) },
+                             options = listOf("0", "2.5", "5", "7.5", "10", "12.5", "15", "17.5", "20", "22.5", "25", "30", "35", "40", "45", "50", "60", "70", "80", "90", "100", "120", "140", "160", "180", "200"),
+                             placeholder = "kg",
+                             modifier = Modifier.width(80.dp).padding(end = 4.dp)
+                         )
+                     }
                      
                      WorkoutValueDropdown(
                          value = repsVal,
